@@ -13,6 +13,8 @@
 #include "PlayerHUD.h"
 #include "Blueprint/UserWidget.h"
 
+#include "ARPGPlayerState.h"
+
 //////////////////////////////////////////////////////////////////////////
 // AARPGCharacter
 
@@ -52,9 +54,21 @@ AARPGCharacter::AARPGCharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
+	//Player stats
+	CurrentLevel = 1;
+	SkillPoints = 5;
+
+	StrengthValue = 1;
+	DexterityValue = 1;
+	IntellectValue = 1;
+
+	ARPGPlayerState = nullptr;
+
 	// HUD
-	PlayerHUDClass = nullptr;
+	//PlayerHUDClass = nullptr;
 	PlayerHUD = nullptr;
+
+
 }
 
 void AARPGCharacter::BeginPlay()
@@ -63,13 +77,13 @@ void AARPGCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	//Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
+	//if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	//{
+	//	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+	//	{
+	//		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+	//	}
+	//}
 
 	//Add HUD to viewport
 	if (PlayerHUDClass)
@@ -80,33 +94,19 @@ void AARPGCharacter::BeginPlay()
 			PlayerHUD->AddToPlayerScreen();
 		}
 	}
+
+	ARPGPlayerState = Cast<AARPGPlayerState>(Controller->PlayerState);
+}
+
+void AARPGCharacter::Tick(float deltaSeconds)
+{
+	Super::Tick(deltaSeconds);
+
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void AARPGCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
-{
-	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
-
-		//Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-		//Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AARPGCharacter::Move);
-
-		//Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AARPGCharacter::Look);
-
-		//Sprinting
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AARPGCharacter::Sprint);
-		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AARPGCharacter::StopSprinting);
-
-	}
-
-}
 
 void AARPGCharacter::Move(const FInputActionValue& Value)
 {
@@ -147,30 +147,51 @@ void AARPGCharacter::Look(const FInputActionValue& Value)
 void AARPGCharacter::Sprint()
 {
 	//Start sprinting
+	bIsSprinting = true;
 	GetCharacterMovement()->MaxWalkSpeed = 1000.0f;
 }
 
 void AARPGCharacter::StopSprinting()
 {
 	//Stop sprinting
+	bIsSprinting = false;
 	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
 }
 
-void AARPGCharacter::TakeDamage(const float damageAmount)
+void AARPGCharacter::TakeDamage(float damageAmount)
 {
-	PlayerHealth = FMath::Clamp(PlayerHealth - damageAmount, 0.f, PlayerMaxHealth);
+	int healthDamage = damageAmount - PlayerArmor;
+
+	PlayerArmor = FMath::Clamp(PlayerArmor - damageAmount, 0.f, PlayerMaxArmor);
+
+	PlayerHealth = FMath::Clamp(PlayerHealth - healthDamage, 0.f, PlayerMaxHealth);
+	if (PlayerHUD)
+	{
+		PlayerHUD->SetHealth(PlayerHealth, PlayerMaxHealth);
+		PlayerHUD->SetArmor(PlayerArmor, PlayerMaxArmor);
+
+		if(ARPGPlayerState)
+		PlayerHUD->SetHealth(ARPGPlayerState->CurrentLevel, PlayerMaxHealth);
+
+	}
+}
+
+void AARPGCharacter::Heal(float healAmount)
+{
+	PlayerHealth = FMath::Clamp(PlayerHealth + healAmount, 0.f, PlayerMaxHealth);
 	if (PlayerHUD)
 	{
 		PlayerHUD->SetHealth(PlayerHealth, PlayerMaxHealth);
 	}
 }
 
-void AARPGCharacter::Heal(const float healAmount)
+
+void AARPGCharacter::HealArmor(float recoverAmount)
 {
-	PlayerHealth = FMath::Clamp(PlayerHealth + healAmount, 0.f, PlayerMaxHealth);
+	PlayerArmor = FMath::Clamp(PlayerArmor + recoverAmount, 0.f, PlayerMaxArmor);
 	if (PlayerHUD)
 	{
-		PlayerHUD->SetHealth(PlayerHealth, PlayerMaxHealth);
+		PlayerHUD->SetArmor(PlayerArmor, PlayerMaxArmor);
 	}
 }
 

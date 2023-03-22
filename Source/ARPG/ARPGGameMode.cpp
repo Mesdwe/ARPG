@@ -3,6 +3,8 @@
 #include "ARPGGameMode.h"
 #include "ARPGCharacter.h"
 #include "UObject/ConstructorHelpers.h"
+#include "ARPGPlayerState.h"
+#include "ARPGPlayerController.h"
 
 AARPGGameMode::AARPGGameMode()
 {
@@ -12,4 +14,14 @@ AARPGGameMode::AARPGGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+
+	PlayerControllerClass = AARPGPlayerController::StaticClass();
+	//static ConstructorHelpers::FClassFinder<AARPGPlayerController> PlayerControllerBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_ARPGPlayerController"));
+	//if (PlayerControllerBPClass.Class != NULL)
+	//{
+
+
+	//	PlayerControllerClass = PlayerControllerBPClass.Class;
+	//}
+	PlayerStateClass = AARPGPlayerState::StaticClass();
 }

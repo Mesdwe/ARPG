@@ -21,33 +21,54 @@ class AARPGCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 	
-	/** MappingContext */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputMappingContext* DefaultMappingContext;
-
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* JumpAction;
-
-	/** Move Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* MoveAction;
-
-	/** Look Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* LookAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* SprintAction;
-	
-
 
 
 public:
 	AARPGCharacter();
 	
-
 protected:
+	bool bIsSprinting;
+
+
+	/** Player Status */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Status")
+		int CurrentLevel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Status")
+		int SkillPoints;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Status")
+		int StrengthValue;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Status")
+		int DexterityValue;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Status")
+		int IntellectValue;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
+		float PlayerHealth;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
+		float PlayerMaxHealth;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
+		float PlayerArmor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
+		float PlayerMaxArmor;
+
+	UPROPERTY()
+		class AARPGPlayerState* ARPGPlayerState;
+
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<class UPlayerHUD> PlayerHUDClass;
+
+	UPROPERTY()
+		class UPlayerHUD* PlayerHUD;
+
+
+public:
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -62,32 +83,27 @@ protected:
 	void StopSprinting();
 
 	//Allows the character to take damage
-	UFUNCTION(BlueprintCallable)
-	void TakeDamage(const float damageAmount);
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void TakeDamage(float damageAmount);
 
 	//Allows the character to heal
-	UFUNCTION(BlueprintCallable)
-	void Heal(const float healAmount);
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void Heal(float healAmount);
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
-		float PlayerHealth;
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	void HealArmor(float recoverAmount);
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
-		float PlayerMaxHealth;
 
-	UPROPERTY(EditAnywhere)
-		TSubclassOf<class UPlayerHUD> PlayerHUDClass;
-
-	UPROPERTY()
-		class UPlayerHUD* PlayerHUD;
 
 protected:
 	// APawn interface
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 	// To add mapping context
 	virtual void BeginPlay();
+
+	virtual void Tick(float deltaSeconds);
 
 public:
 	/** Returns CameraBoom subobject **/

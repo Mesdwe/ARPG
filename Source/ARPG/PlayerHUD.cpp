@@ -12,7 +12,7 @@ void UPlayerHUD::SetHealth(float currentHealth, float maxHealth)
 	}
 }
 
-void UPlayerHUD::SetStamina(float currentStamina, float maxStamina)
+void UPlayerHUD::SetArmor(float currentStamina, float maxStamina)
 {
 	if (StaminaBar)
 	{

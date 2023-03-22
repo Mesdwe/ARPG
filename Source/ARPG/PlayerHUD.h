@@ -20,6 +20,6 @@ public:
 		class UProgressBar* StaminaBar;
 public:
 	void SetHealth(float currentHealth, float maxHealth);
-	void SetStamina(float value, float maxStamina);
+	void SetArmor(float value, float maxStamina);
 	
 };
